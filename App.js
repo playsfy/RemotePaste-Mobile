@@ -1,14 +1,41 @@
+import React, { Component } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { w3cwebsocket as W3CWebSocket } from "websocket";
+import Clipboard from '@react-native-community/clipboard';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
+const client = new W3CWebSocket('ws://clipup.herokuapp.com');
+
+class App extends Component {
+
+  constructor () {
+    super ();
+    this.state = {
+      isLoading: false,
+      msg : '', 
+    };
+  }
+
+  componentWillMount() {
+    client.onopen = () => {
+      console.log('WebSocket Client Connected');
+      this.setState({ msg: 'WebSocket Client Connected' })
+    };
+    client.onmessage = (message) => {
+      console.log(message);
+      this.setState({ msg: message.data });
+      Clipboard.setString(message.data);
+    };
+  }
+  
+  render() {
+    return (
+      <View style={styles.container}>
+      <Text>{this.state.msg}</Text>
       <StatusBar style="auto" />
     </View>
-  );
+    );
+  }
 }
 
 const styles = StyleSheet.create({
@@ -19,3 +46,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+
+export default App;
